@@ -1,0 +1,21 @@
+header {
+  text-align: center;
+  line-height: 1;
+  margin: 40px 0;
+}
+
+#start {
+  width: 40%;
+  margin-left: 30%;
+  margin-top: 5vh;
+}
+
+.player {
+  width: 49%;
+  float: left;
+  text-align: center;
+}
+
+.hide {
+  display: none;
+}

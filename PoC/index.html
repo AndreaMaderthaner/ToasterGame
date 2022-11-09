@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>The Toaster Game</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="toaster.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css"
+    />
+    <link rel="stylesheet" href="basic.css" />
+  </head>
+  <body>
+    <header>
+      <h1>The Toaster Game</h1>
+      <p>that nobody asked for ;)</p>
+    </header>
+
+    <div class="player">
+      <h2>PlayerOne</h2>
+      <p>Energy Consumption: <span id="energyOne"></span></p>
+      <p>Number of Tones: <span id="tonesOne"></span></p>
+      <em class="action hide">Press Key A</em>
+    </div>
+
+    <div class="player">
+      <h2>PlayerTwo</h2>
+      <p>Energy Consumption: <span id="energyTwo"></span></p>
+      <p>Number of Tones: <span id="tonesTwo"></span></p>
+      <em class="action hide">Press Key J</em>
+    </div>
+
+    <button class="button" id="start" title="Play">Start the Game</button>
+  </body>
+</html>
