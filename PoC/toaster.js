@@ -3,14 +3,18 @@ let audioContext = new AudioContext();
 let frequencies1 = [261.6256, 246.9417, 220.0, 195.9977];
 let frequencies2 = [261.6256, 293.6648, 329.6276, 349.2282];
 
-let playerOne = {};
-let playerTwo = {};
-
+let playerOne = { noise: false };
+let playerTwo = { noise: false };
+const players = [playerOne, playerTwo];
 let readyToPlay = true;
 
 let timeForANote = 1;
 
 let maxConsumption = 1000;
+
+function noise(player) {
+  players[player].noise = !players[player].noise;
+}
 
 function assignFrequencies(player, frequencies) {
   let selectedFrequencies = [...frequencies];
@@ -33,7 +37,7 @@ function shuffleArray(array) {
   return array;
 }
 
-function playFrequency(frequency) {
+function playFrequency(frequency, player) {
   readyToPlay = false;
 
   // create 2 second worth of audio buffer, with single channels and sampling rate of your device.
@@ -43,12 +47,16 @@ function playFrequency(frequency) {
   let duration = timeForANote * sampleRate;
   let numChannels = 1;
   let buffer = audioContext.createBuffer(numChannels, duration, sampleRate);
-  console.log(buffer);
   // fill the channel with the desired frequency's data
   let channelData = buffer.getChannelData(0);
   // change sampleRate to use duration instead becaue otherwise you don't fill the value in channelData buffer meaning you don't have the correct duration
   for (let i = 0; i < duration; i++) {
-    channelData[i] = Math.sin((2 * Math.PI * frequency * i) / sampleRate);
+    channelData[i] =
+      Math.sin((2 * Math.PI * frequency * i) / sampleRate) +
+      (player.noise
+        ? Math.random(-0.5, 0.5) *
+          Math.pow(player.consumption / maxConsumption, 2)
+        : 0);
   }
 
   // create audio source node.
@@ -84,13 +92,15 @@ $(document).ready(function () {
     if (!readyToPlay) return;
     if (e.keyCode == 97) {
       playFrequency(
-        playerOne.frequencies[playerOne.index++ % playerOne.frequencies.length]
+        playerOne.frequencies[playerOne.index++ % playerOne.frequencies.length],
+        playerOne
       );
     }
 
     if (e.keyCode == 106) {
       playFrequency(
-        playerTwo.frequencies[playerTwo.index++ % playerTwo.frequencies.length]
+        playerTwo.frequencies[playerTwo.index++ % playerTwo.frequencies.length],
+        playerTwo
       );
     }
   });

@@ -23,6 +23,14 @@
       <p>Energy Consumption: <span id="energyOne"></span></p>
       <p>Number of Tones: <span id="tonesOne"></span></p>
       <em class="action hide">Press Key A</em>
+      <p>
+        <input
+          type="checkbox"
+          id="noiseP1"
+          name="noiseP1"
+          onclick="{noise(0)}"
+        />Noise
+      </p>
     </div>
 
     <div class="player">
@@ -30,6 +38,14 @@
       <p>Energy Consumption: <span id="energyTwo"></span></p>
       <p>Number of Tones: <span id="tonesTwo"></span></p>
       <em class="action hide">Press Key J</em>
+      <p>
+        <input
+          type="checkbox"
+          id="noiseP2"
+          name="noiseP2"
+          onClick="{noise(1)}"
+        />Noise
+      </p>
     </div>
 
     <button class="button" id="start" title="Play">Start the Game</button>
