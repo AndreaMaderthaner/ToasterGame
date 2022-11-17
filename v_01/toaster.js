@@ -144,7 +144,8 @@ $(document).ready(function () {
     move = setInterval(moveToast, interval);
     setTimeleft();
     StartSound();
-    $(".action").removeClass("hide");
+    // $(".action").removeClass("hide");
+    $(".hide").removeClass("hide");
 
     // playbackControl.oninput = () => {
     //   source.playbackRate.value = playbackControl.value;
