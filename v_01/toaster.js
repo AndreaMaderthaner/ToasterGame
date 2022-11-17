@@ -13,26 +13,22 @@ let audioContext = new AudioContext();
 let playerOne = [500, 100, 800, 50];
 let playerTwo = [500, 100, 800, 50];
 
-let readyToPlay = true;
-
 let timeForANote = 1;
 
 let consumption = 0;
 let maxConsumption = 1000;
+let canPlay = false; //for when the player loses or did not start the game yet
 
 let move; // interval for moving the toast up (depending on consumption)
-let speed = 0; // speed of the players' button clicks used to calculate if the are on the track of losing or winning
-
+let speed = 0; // speed of the players' button clicks used to calculate if they are on the track of losing or winning
+let timeLeft; // Time to hold on
+let downloadTimer;
 function getEnergyConsumption() {
   consumption = Math.round(Math.random() * (maxConsumption - 100) + 100);
 }
 
 function playFrequency(frequency) {
-  readyToPlay = false;
-
   // create 2 second worth of audio buffer, with single channels and sampling rate of your device.
-
-  //create 10 seconds worth of audio buffer
   let sampleRate = audioContext.sampleRate;
   let duration = timeForANote * sampleRate;
   let numChannels = 1;
@@ -53,9 +49,6 @@ function playFrequency(frequency) {
   // finally start to play
   source.start(0);
   // just to give some time to play the sound
-  setTimeout(() => {
-    readyToPlay = true;
-  }, 500);
 }
 
 // direction: false -> up, true -> down
@@ -80,13 +73,39 @@ function moveToast(direction = false) {
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
   } else {
-    clearInterval(move);
+    stop();
     alert("Game over!");
   }
 }
 
+function setTimeleft() {
+  timeleft = 10;
+  document.getElementById("countdown").innerHTML =
+    timeleft + " seconds remaining";
+  downloadTimer = setInterval(function () {
+    if (timeleft <= 0) {
+      document.getElementById("countdown").innerHTML = "Finished";
+      clearInterval(downloadTimer);
+      stop();
+      alert("Perfect Toast !");
+    } else {
+      document.getElementById("countdown").innerHTML =
+        timeleft + " seconds remaining";
+    }
+    timeleft -= 1;
+  }, 1000);
+}
+
+function stop() {
+  clearInterval(move);
+  clearInterval(downloadTimer);
+  canPlay = false;
+}
+
 $(document).ready(function () {
   $("#start").click(function () {
+    stop();
+    canPlay = true;
     getEnergyConsumption();
     $("#consumption").text(consumption);
     $("#taps").text(Math.round(consumption * 0.1));
@@ -96,20 +115,24 @@ $(document).ready(function () {
     // calculate how fast the taost is moving up depending on household consumption
     let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
     move = setInterval(moveToast, interval);
+    setTimeleft();
 
     $(".action").removeClass("hide");
   });
 
-  $(window).bind("keypress", function (e) {
-    //if (!readyToPlay) return;
-
-    if (e.keyCode == 97) {
-      playFrequency(playerOne[0]);
+  $(window).bind("keyup", function (e) {
+    if (!canPlay) return;
+    // console.log(e.keyCode);
+    // if we use keypress : A = 97 and E = 106.
+    // if we use keyup (so people can't stay pressing it) : A = 65 and E = 74.
+    // No idea why...
+    if (e.keyCode == 65) {
+      // playFrequency(playerOne[0]);
       moveToast(true);
     }
 
-    if (e.keyCode == 106) {
-      playFrequency(playerTwo[0]);
+    if (e.keyCode == 74) {
+      // playFrequency(playerTwo[0]);
       moveToast(true);
     }
   });
