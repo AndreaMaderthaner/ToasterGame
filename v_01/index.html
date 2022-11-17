@@ -22,22 +22,35 @@
       <p>Required taps/m: <span id="taps"></span></p>
       <p>Timeleft : <span id="countdown"></span></p>
     </div>
-
     <div class="player">
-      <h2>Player One</h2>
-      <em class="action hide">Press Key A</em>
+      <div>
+        <h2>Player One</h2>
+        <em class="action hide">Press Key A</em>
+      </div>
+      <div class="justSomeMargin">
+        <h2>Player Two</h2>
+        <em class="action hide">Press Key J</em>
+      </div>
     </div>
-
-    <div class="player">
-      <h2>Player Two</h2>
-      <em class="action hide">Press Key J</em>
+    <div class="center">
+      <h2>Toastiness Setting</h2>
+      <input
+        type="number"
+        id="toastiness"
+        class="center"
+        title="Toastiness"
+        min="1"
+        max="6"
+        value="1"
+      />
     </div>
 
     <button class="button" id="start" title="Play">Start the Game</button>
-    <div>
-      <h2>Set playback rate</h2>
+
+    <div class="center">
+      <h2>Playback rate</h2>
       <input
-        class="playback-rate-control"
+        class="playback-rate-control hide"
         type="range"
         min="0.25"
         max="3"

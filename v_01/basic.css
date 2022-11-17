@@ -3,6 +3,10 @@ header {
   line-height: 1;
   margin: 50px 0;
 }
+body {
+  display: flex;
+  flex-direction: column;
+}
 
 #start {
   width: 40%;
@@ -22,9 +26,13 @@ header {
 }
 
 .player {
-  width: 49%;
-  float: left;
+  display: flex;
+  flex-direction: row;
   text-align: center;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px;
 }
 
 .hide {
@@ -48,4 +56,10 @@ header {
   height: 200px;
   margin: 100px auto 20px auto;
   z-index: 1;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
