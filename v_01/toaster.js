@@ -16,6 +16,11 @@ let audioContext = new AudioContext();
 // let timeForANote = 1;
 let playbackControl;
 let playbackValue;
+let soundIsPlaying = false;
+const audioCtx = new AudioContext();
+let source;
+let songLength;
+
 let consumption = 0;
 let maxConsumption = 1000;
 let canPlay = false; //for when the player loses or did not start the game yet
@@ -59,10 +64,13 @@ function moveToast(direction = false) {
 
   let increment = direction ? -1 : 1;
   let reachedBottom = parseInt(bottom, 10) < -220;
-
+  source.playbackRate.value = 0.5;
+  playbackValue.textContent = playbackControl.value;
   if (reachedBottom && direction) {
     // energy is wasted because toast is already within the toaster
     // TODO: change frequency to higher pitch
+    source.playbackRate.value = 1.5;
+    playbackValue.textContent = 1.5;
   } else if (parseInt(bottom, 10) < 0) {
     // speed is used to calculate if players will be winning or losing
     // if speed > 20 -> player is going to win, speed < -20 player is going to lose
@@ -70,6 +78,16 @@ function moveToast(direction = false) {
     speed = direction ? speed + 1 : speed - 1;
 
     // TODO: change frequencies accordenly
+    if (speed > 20) {
+      source.playbackRate.value = 1.0;
+      playbackValue.textContent = 1.0;
+    } else if (speed < -20) {
+      source.playbackRate.value = 0.5;
+      playbackValue.textContent = 0.5;
+    } else {
+      source.playbackRate.value = 1;
+      playbackValue.textContent = 1;
+    }
 
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
@@ -100,16 +118,20 @@ function setTimeleft() {
 function stop() {
   clearInterval(move);
   clearInterval(downloadTimer);
-  StopSound();
+  if (soundIsPlaying) {
+    StopSound();
+    source.playbackRate.value = 1;
+    playbackValue.textContent = 1;
+  }
   canPlay = false;
 }
 
 $(document).ready(function () {
+  playbackControl = document.querySelector(".playback-rate-control");
+  playbackValue = document.querySelector(".playback-rate-value");
+  playbackControl.setAttribute("disabled", "disabled");
   $("#start").click(function () {
-    // stop();
-    playbackControl = document.querySelector(".playback-rate-control");
-    playbackValue = document.querySelector(".playback-rate-value");
-    playbackControl.setAttribute("disabled", "disabled");
+    stop();
     canPlay = true;
     getEnergyConsumption();
     $("#consumption").text(consumption);
@@ -123,6 +145,11 @@ $(document).ready(function () {
     setTimeleft();
     StartSound();
     $(".action").removeClass("hide");
+
+    // playbackControl.oninput = () => {
+    //   source.playbackRate.value = playbackControl.value;
+    //   playbackValue.textContent = playbackControl.value;
+    // };
   });
 
   $(window).bind("keyup", function (e) {
@@ -144,9 +171,7 @@ $(document).ready(function () {
 });
 
 /// =================== SOUND PART =================== ///
-const audioCtx = new AudioContext();
-let source;
-let songLength;
+
 // use XHR to load an audio track, and
 // decodeAudioData to decode it and stick it in a buffer.
 // Then we put the buffer into the source
@@ -157,7 +182,8 @@ function getData() {
 
   request.open(
     "GET",
-    "https://upload.wikimedia.org/wikipedia/commons/b/be/Clair_de_lune_%28Claude_Debussy%29_Suite_bergamasque.ogg",
+    "https://upload.wikimedia.org/wikipedia/commons/2/21/Chopin_-_Preludes%2C_Op._28_-_No._20_%27Funeral_march%27.ogg",
+    // "https://upload.wikimedia.org/wikipedia/commons/b/be/Clair_de_lune_%28Claude_Debussy%29_Suite_bergamasque.ogg",
     true
   );
 
@@ -174,6 +200,7 @@ function getData() {
         source.playbackRate.value = playbackControl.value;
         source.connect(audioCtx.destination);
         source.loop = true;
+        // source.start();
       },
       (e) => {
         `Error with decoding audio data ${e.error}`;
@@ -188,11 +215,13 @@ function getData() {
 
 function StartSound() {
   getData();
-  source.start(0);
+  source.start();
+  soundIsPlaying = true;
   playbackControl.removeAttribute("disabled");
 }
 
 function StopSound() {
-  source.stop(0);
+  source.stop();
+  soundIsPlaying = false;
   playbackControl.setAttribute("disabled", "disabled");
 }
