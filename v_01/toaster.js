@@ -23,14 +23,24 @@ let songLength;
 
 let consumption = 0;
 let maxConsumption = 1000;
+let minConsumption = 100;
+let maxBpm = 500;
+let minBpm = 100;
 let canPlay = false; //for when the player loses or did not start the game yet
 
 let move; // interval for moving the toast up (depending on consumption)
 let speed = 0; // speed of the players' button clicks used to calculate if they are on the track of losing or winning
 let time = 20; // Time to hold on
+var previousClick = 120;
+var clicksPerMin = 120;
 let downloadTimer;
+let minusBpm;
+let goalBpm = 0;
+
 function getEnergyConsumption() {
-  consumption = Math.round(Math.random() * (maxConsumption - 100) + 100);
+  consumption = Math.round(
+    Math.random() * (maxConsumption - minConsumption) + minConsumption
+  );
 }
 
 // function playFrequency(frequency) {
@@ -118,6 +128,7 @@ function setTimeleft() {
 function stop() {
   clearInterval(move);
   clearInterval(downloadTimer);
+  clearInterval(minusBpm);
   if (soundIsPlaying) {
     StopSound();
     source.playbackRate.value = 1;
@@ -135,15 +146,20 @@ $(document).ready(function () {
     stop();
     canPlay = true;
     getEnergyConsumption();
+    goalBpm = Math.floor(
+      lerp(consumption, minConsumption, maxConsumption, minBpm, maxBpm)
+    );
     $("#consumption").text(consumption);
-    $("#taps").text(Math.round(consumption * 0.1));
+    $("#taps").text(goalBpm);
     $("#toast").css("margin-bottom", "-200px");
     $("#toast").css("margin-top", "300px");
 
-    // calculate how fast the toast is moving up depending on household consumption
-    let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
+    // Just an interval to call the function moveToast every 100ms
+    // let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
+    let interval = 100;
     move = setInterval(moveToast, interval);
     setTimeleft();
+    minusBpm = setInterval(diminishBpm, interval);
     StartSound();
     // $(".action").removeClass("hide");
     $(".hide").removeClass("hide");
@@ -163,11 +179,13 @@ $(document).ready(function () {
     if (e.keyCode == 65) {
       // playFrequency(playerOne[0]);
       moveToast(true);
+      bpm();
     }
 
     if (e.keyCode == 74) {
       // playFrequency(playerTwo[0]);
       moveToast(true);
+      bpm();
     }
   });
 });
@@ -226,4 +244,25 @@ function StopSound() {
   source.stop();
   soundIsPlaying = false;
   playbackControl.setAttribute("disabled", "disabled");
+}
+
+/// =================== BPM =================== ///
+function bpm() {
+  var seconds = new Date().getTime();
+  clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
+  previousClick = seconds;
+  console.log(Math.floor(clicksPerMin));
+}
+// If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
+function diminishBpm() {
+  var seconds = new Date().getTime();
+  if (seconds - previousClick > 100) {
+    clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
+  }
+  console.log(Math.floor(clicksPerMin));
+}
+
+/// =================== UTILITIES =================== ///
+function lerp(x, x0, x1, y0, y1) {
+  return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
 }
