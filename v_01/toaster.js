@@ -72,33 +72,13 @@ function moveToast(direction = false) {
   let bottom = $("#toast").css("margin-bottom");
   let top = $("#toast").css("margin-top");
 
-  let increment = direction ? -1 : 1;
+  let increment = goalBpm < clicksPerMin ? -1 : 1;
   let reachedBottom = parseInt(bottom, 10) < -220;
-  source.playbackRate.value = 0.5;
-  playbackValue.textContent = playbackControl.value;
+  let rate = lerp(clicksPerMin, minBpm, maxBpm, 0.5, 1.5);
+  source.playbackRate.value = rate;
+  playbackValue.textContent = rate;
   if (reachedBottom && direction) {
-    // energy is wasted because toast is already within the toaster
-    // TODO: change frequency to higher pitch
-    source.playbackRate.value = 1.5;
-    playbackValue.textContent = 1.5;
   } else if (parseInt(bottom, 10) < 0) {
-    // speed is used to calculate if players will be winning or losing
-    // if speed > 20 -> player is going to win, speed < -20 player is going to lose
-    // speed inbetween 20 and - 20 means up and down movment cancel each other out (perfect balance)
-    speed = direction ? speed + 1 : speed - 1;
-
-    // TODO: change frequencies accordenly
-    if (speed > 20) {
-      source.playbackRate.value = 1.0;
-      playbackValue.textContent = 1.0;
-    } else if (speed < -20) {
-      source.playbackRate.value = 0.5;
-      playbackValue.textContent = 0.5;
-    } else {
-      source.playbackRate.value = 1;
-      playbackValue.textContent = 1;
-    }
-
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
   } else {
@@ -251,7 +231,7 @@ function bpm() {
   var seconds = new Date().getTime();
   clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
   previousClick = seconds;
-  console.log(Math.floor(clicksPerMin));
+  // console.log(Math.floor(clicksPerMin));
 }
 // If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
 function diminishBpm() {
@@ -259,10 +239,13 @@ function diminishBpm() {
   if (seconds - previousClick > 100) {
     clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
   }
-  console.log(Math.floor(clicksPerMin));
+  // console.log(Math.floor(clicksPerMin));
 }
 
 /// =================== UTILITIES =================== ///
 function lerp(x, x0, x1, y0, y1) {
-  return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  let value = (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  if (value > y1) return y1;
+  if (value < y0) return y0;
+  return Math.floor(value * 10) / 10;
 }
