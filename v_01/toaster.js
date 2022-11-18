@@ -131,6 +131,7 @@ $(document).ready(function () {
   playbackValue = document.querySelector(".playback-rate-value");
   playbackControl.setAttribute("disabled", "disabled");
   $("#start").click(function () {
+    time = 30 + 10 * document.getElementById("toastiness").value;
     stop();
     canPlay = true;
     getEnergyConsumption();

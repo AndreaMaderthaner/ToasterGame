@@ -38,6 +38,9 @@ body {
 .hide {
   display: none;
 }
+.hide2 {
+  display: none;
+}
 
 #toaster {
   background-color: grey;
