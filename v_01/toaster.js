@@ -36,6 +36,7 @@ var clicksPerMin = 120;
 let downloadTimer;
 let minusBpm;
 let goalBpm = 0;
+let previousRate = 1;
 
 function getEnergyConsumption() {
   consumption = Math.round(
@@ -72,13 +73,23 @@ function moveToast(direction = false) {
   let bottom = $("#toast").css("margin-bottom");
   let top = $("#toast").css("margin-top");
 
-  let increment = goalBpm < clicksPerMin ? -1 : 1;
-  let reachedBottom = parseInt(bottom, 10) < -220;
   let rate = lerp(clicksPerMin, minBpm, maxBpm, 0.5, 1.5);
-  source.playbackRate.value = rate;
-  playbackValue.textContent = rate;
-  if (reachedBottom && direction) {
-  } else if (parseInt(bottom, 10) < 0) {
+  if (rate < 1.2 && rate > 0.8) {
+    rate = 1;
+  }
+  if (previousRate == rate) {
+    source.playbackRate.value = rate;
+    playbackValue.textContent = rate;
+  }
+
+  let increment = -1 * lerp(rate, 0.5, 1.5, -5, 5);
+  let reachedBottom = parseInt(bottom, 10) < -220;
+  if (reachedBottom && increment < 0) {
+    increment = 0;
+  }
+  previousRate = rate;
+
+  if (parseInt(bottom, 10) < 0) {
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
   } else {
@@ -158,13 +169,13 @@ $(document).ready(function () {
     // No idea why...
     if (e.keyCode == 65) {
       // playFrequency(playerOne[0]);
-      moveToast(true);
+      // moveToast(true);
       bpm();
     }
 
     if (e.keyCode == 74) {
       // playFrequency(playerTwo[0]);
-      moveToast(true);
+      // moveToast(true);
       bpm();
     }
   });
@@ -236,7 +247,7 @@ function bpm() {
 // If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
 function diminishBpm() {
   var seconds = new Date().getTime();
-  if (seconds - previousClick > 100) {
+  if (seconds - previousClick > 500) {
     clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
   }
   // console.log(Math.floor(clicksPerMin));
