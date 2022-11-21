@@ -16,7 +16,9 @@ let audioContext = new AudioContext();
 // let timeForANote = 1;
 let playbackControl;
 let playbackValue;
-let soundIsPlaying = false;
+let soundIsPlaying = false; // to know if the game started
+let endSoundIsPlaying = false;
+let gameEnded = false;
 const audioCtx = new AudioContext();
 let source;
 let songLength;
@@ -26,7 +28,8 @@ let maxConsumption = 1000;
 let minConsumption = 100;
 let maxBpm = 500;
 let minBpm = 100;
-let canPlay = false; //for when the player loses or did not start the game yet
+let avgRate = 0;
+let counter = 0;
 
 let move; // interval for moving the toast up (depending on consumption)
 let speed = 0; // speed of the players' button clicks used to calculate if they are on the track of losing or winning
@@ -74,6 +77,8 @@ function moveToast(direction = false) {
   let top = $("#toast").css("margin-top");
 
   let rate = lerp(clicksPerMin, minBpm, maxBpm, 0.5, 1.5);
+  avgRate = (avgRate * counter + rate) / (counter + 1);
+  counter = counter + 1;
   if (rate < 1.2 && rate > 0.8) {
     rate = 1;
   }
@@ -93,6 +98,7 @@ function moveToast(direction = false) {
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
   } else {
+    gameEnded = true;
     stop();
     alert("Game over!");
   }
@@ -106,6 +112,7 @@ function setTimeleft() {
     if (timeleft <= 0) {
       document.getElementById("countdown").innerHTML = "Finished";
       clearInterval(downloadTimer);
+      gameEnded = true;
       stop();
       alert("Perfect Toast !");
     } else {
@@ -117,15 +124,20 @@ function setTimeleft() {
 }
 
 function stop() {
+  function handleSound() {
+    if (soundIsPlaying || endSoundIsPlaying) {
+      StopSound();
+      source.playbackRate.value = 1;
+      playbackValue.textContent = 1;
+    }
+    if (gameEnded) {
+      PlaySoundEnd();
+    }
+  }
+  handleSound();
   clearInterval(move);
   clearInterval(downloadTimer);
   clearInterval(minusBpm);
-  if (soundIsPlaying) {
-    StopSound();
-    source.playbackRate.value = 1;
-    playbackValue.textContent = 1;
-  }
-  canPlay = false;
 }
 
 $(document).ready(function () {
@@ -133,9 +145,11 @@ $(document).ready(function () {
   playbackValue = document.querySelector(".playback-rate-value");
   playbackControl.setAttribute("disabled", "disabled");
   $("#start").click(function () {
+    gameEnded = false;
     time = 30 + 10 * document.getElementById("toastiness").value;
+    avgRate = 0;
+    counter = 0;
     stop();
-    canPlay = true;
     getEnergyConsumption();
     goalBpm = Math.floor(
       lerp(consumption, minConsumption, maxConsumption, minBpm, maxBpm)
@@ -162,7 +176,7 @@ $(document).ready(function () {
   });
 
   $(window).bind("keyup", function (e) {
-    if (!canPlay) return;
+    if (!soundIsPlaying) return;
     // console.log(e.keyCode);
     // if we use keypress : A = 97 and E = 106.
     // if we use keyup (so people can't stay pressing it) : A = 65 and E = 74.
@@ -197,7 +211,6 @@ function getData() {
     // "https://upload.wikimedia.org/wikipedia/commons/b/be/Clair_de_lune_%28Claude_Debussy%29_Suite_bergamasque.ogg",
     true
   );
-
   request.responseType = "arraybuffer";
 
   request.onload = () => {
@@ -211,7 +224,6 @@ function getData() {
         source.playbackRate.value = playbackControl.value;
         source.connect(audioCtx.destination);
         source.loop = true;
-        // source.start();
       },
       (e) => {
         `Error with decoding audio data ${e.error}`;
@@ -235,6 +247,17 @@ function StopSound() {
   source.stop();
   soundIsPlaying = false;
   playbackControl.setAttribute("disabled", "disabled");
+}
+
+function PlaySoundEnd() {
+  getData();
+  source.start();
+  endSoundIsPlaying = true;
+  // I don't know why but it doesn't work if I don't put a setTimeout
+  setTimeout(() => {
+    source.playbackRate.value = Math.floor(avgRate * 100) / 100;
+    playbackValue.textContent = Math.floor(avgRate * 100) / 100;
+  }, 1000);
 }
 
 /// =================== BPM =================== ///
