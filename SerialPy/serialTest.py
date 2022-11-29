@@ -13,7 +13,7 @@ import serial
 import time
 ## Can only be used if we're not using the port through the arduino IDE
 # arduino = serial.Serial(port='COM5', baudrate=115200, timeout=.1)
-reader = serial.Serial('COM6', 9600, timeout=.1)
+reader = serial.Serial('COM3', 9600, timeout=.1)
 keyboard = Controller()
 # def write_read(x):
 #     arduino.write(bytes(x, 'utf-8'))
