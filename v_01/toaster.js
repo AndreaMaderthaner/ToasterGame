@@ -77,6 +77,11 @@ function moveToast(direction = false) {
   let top = $("#toast").css("margin-top");
 
   let rate = lerp(clicksPerMin, minBpm, maxBpm, 0.5, 1.5);
+  // When using the serial ports, the rate is sometimes infinite...
+  // So we need to check if it's a number
+  if (Number.isNaN(rate)) {
+    rate = 1;
+  }
   avgRate = (avgRate * counter + rate) / (counter + 1);
   counter = counter + 1;
   if (rate < 1.2 && rate > 0.8) {
@@ -144,6 +149,9 @@ $(document).ready(function () {
   playbackControl = document.querySelector(".playback-rate-control");
   playbackValue = document.querySelector(".playback-rate-value");
   playbackControl.setAttribute("disabled", "disabled");
+  $("#port").click(function () {
+    getButtonPress();
+  });
   $("#start").click(function () {
     gameEnded = false;
     time = 30 + 10 * document.getElementById("toastiness").value;
@@ -257,7 +265,7 @@ function PlaySoundEnd() {
   setTimeout(() => {
     source.playbackRate.value = Math.floor(avgRate * 100) / 100;
     playbackValue.textContent = Math.floor(avgRate * 100) / 100;
-  }, 1000);
+  }, 2000);
 }
 
 /// =================== BPM =================== ///
@@ -265,6 +273,7 @@ function bpm() {
   var seconds = new Date().getTime();
   clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
   previousClick = seconds;
+  console.log(clicksPerMin);
   // console.log(Math.floor(clicksPerMin));
 }
 // If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
@@ -282,4 +291,29 @@ function lerp(x, x0, x1, y0, y1) {
   if (value > y1) return y1;
   if (value < y0) return y0;
   return Math.floor(value * 10) / 10;
+}
+
+/// =================== SERIAL PORT =================== ///
+async function getButtonPress() {
+  const port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 9600 });
+  while (port.readable) {
+    const reader = port.readable.getReader();
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          // |reader| has been canceled.
+          break;
+        }
+        if (soundIsPlaying) bpm();
+        // Do something with |value|...
+      }
+    } catch (error) {
+      // Handle |error|...
+      console.log(error);
+    } finally {
+      reader.releaseLock();
+    }
+  }
 }
