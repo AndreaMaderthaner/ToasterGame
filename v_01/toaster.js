@@ -16,21 +16,35 @@ let audioContext = new AudioContext();
 // let timeForANote = 1;
 let playbackControl;
 let playbackValue;
-let soundIsPlaying = false;
+let soundIsPlaying = false; // to know if the game started
+let endSoundIsPlaying = false;
+let gameEnded = false;
 const audioCtx = new AudioContext();
 let source;
 let songLength;
 
 let consumption = 0;
 let maxConsumption = 1000;
-let canPlay = false; //for when the player loses or did not start the game yet
+let minConsumption = 100;
+let maxBpm = 500;
+let minBpm = 100;
+let avgRate = 0;
+let counter = 0;
 
 let move; // interval for moving the toast up (depending on consumption)
 let speed = 0; // speed of the players' button clicks used to calculate if they are on the track of losing or winning
 let time = 20; // Time to hold on
+var previousClick = 120;
+var clicksPerMin = 120;
 let downloadTimer;
+let minusBpm;
+let goalBpm = 0;
+let previousRate = 1;
+
 function getEnergyConsumption() {
-  consumption = Math.round(Math.random() * (maxConsumption - 100) + 100);
+  consumption = Math.round(
+    Math.random() * (maxConsumption - minConsumption) + minConsumption
+  );
 }
 
 // function playFrequency(frequency) {
@@ -62,36 +76,29 @@ function moveToast(direction = false) {
   let bottom = $("#toast").css("margin-bottom");
   let top = $("#toast").css("margin-top");
 
-  let increment = direction ? -1 : 1;
+  let rate = lerp(clicksPerMin, minBpm, maxBpm, 0.5, 1.5);
+  avgRate = (avgRate * counter + rate) / (counter + 1);
+  counter = counter + 1;
+  if (rate < 1.2 && rate > 0.8) {
+    rate = 1;
+  }
+  if (previousRate == rate) {
+    source.playbackRate.value = rate;
+    playbackValue.textContent = rate;
+  }
+
+  let increment = -1 * lerp(rate, 0.5, 1.5, -5, 5);
   let reachedBottom = parseInt(bottom, 10) < -220;
-  source.playbackRate.value = 0.5;
-  playbackValue.textContent = playbackControl.value;
-  if (reachedBottom && direction) {
-    // energy is wasted because toast is already within the toaster
-    // TODO: change frequency to higher pitch
-    source.playbackRate.value = 1.5;
-    playbackValue.textContent = 1.5;
-  } else if (parseInt(bottom, 10) < 0) {
-    // speed is used to calculate if players will be winning or losing
-    // if speed > 20 -> player is going to win, speed < -20 player is going to lose
-    // speed inbetween 20 and - 20 means up and down movment cancel each other out (perfect balance)
-    speed = direction ? speed + 1 : speed - 1;
+  if (reachedBottom && increment < 0) {
+    increment = 0;
+  }
+  previousRate = rate;
 
-    // TODO: change frequencies accordenly
-    if (speed > 20) {
-      source.playbackRate.value = 1.0;
-      playbackValue.textContent = 1.0;
-    } else if (speed < -20) {
-      source.playbackRate.value = 0.5;
-      playbackValue.textContent = 0.5;
-    } else {
-      source.playbackRate.value = 1;
-      playbackValue.textContent = 1;
-    }
-
+  if (parseInt(bottom, 10) < 0) {
     $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
     $("#toast").css("margin-top", parseInt(top, 10) - increment + "px");
   } else {
+    gameEnded = true;
     stop();
     alert("Game over!");
   }
@@ -105,6 +112,7 @@ function setTimeleft() {
     if (timeleft <= 0) {
       document.getElementById("countdown").innerHTML = "Finished";
       clearInterval(downloadTimer);
+      gameEnded = true;
       stop();
       alert("Perfect Toast !");
     } else {
@@ -116,14 +124,20 @@ function setTimeleft() {
 }
 
 function stop() {
+  function handleSound() {
+    if (soundIsPlaying || endSoundIsPlaying) {
+      StopSound();
+      source.playbackRate.value = 1;
+      playbackValue.textContent = 1;
+    }
+    if (gameEnded) {
+      PlaySoundEnd();
+    }
+  }
+  handleSound();
   clearInterval(move);
   clearInterval(downloadTimer);
-  if (soundIsPlaying) {
-    StopSound();
-    source.playbackRate.value = 1;
-    playbackValue.textContent = 1;
-  }
-  canPlay = false;
+  clearInterval(minusBpm);
 }
 
 $(document).ready(function () {
@@ -131,19 +145,26 @@ $(document).ready(function () {
   playbackValue = document.querySelector(".playback-rate-value");
   playbackControl.setAttribute("disabled", "disabled");
   $("#start").click(function () {
+    gameEnded = false;
     time = 30 + 10 * document.getElementById("toastiness").value;
+    avgRate = 0;
+    counter = 0;
     stop();
-    canPlay = true;
     getEnergyConsumption();
+    goalBpm = Math.floor(
+      lerp(consumption, minConsumption, maxConsumption, minBpm, maxBpm)
+    );
     $("#consumption").text(consumption);
-    $("#taps").text(Math.round(consumption * 0.1));
+    $("#taps").text(goalBpm);
     $("#toast").css("margin-bottom", "-200px");
     $("#toast").css("margin-top", "300px");
 
-    // calculate how fast the toast is moving up depending on household consumption
-    let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
+    // Just an interval to call the function moveToast every 100ms
+    // let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
+    let interval = 100;
     move = setInterval(moveToast, interval);
     setTimeleft();
+    minusBpm = setInterval(diminishBpm, interval);
     StartSound();
     // $(".action").removeClass("hide");
     $(".hide").removeClass("hide");
@@ -155,19 +176,21 @@ $(document).ready(function () {
   });
 
   $(window).bind("keyup", function (e) {
-    if (!canPlay) return;
+    if (!soundIsPlaying) return;
     // console.log(e.keyCode);
     // if we use keypress : A = 97 and E = 106.
     // if we use keyup (so people can't stay pressing it) : A = 65 and E = 74.
     // No idea why...
     if (e.keyCode == 65) {
       // playFrequency(playerOne[0]);
-      moveToast(true);
+      // moveToast(true);
+      bpm();
     }
 
     if (e.keyCode == 74) {
       // playFrequency(playerTwo[0]);
-      moveToast(true);
+      // moveToast(true);
+      bpm();
     }
   });
 });
@@ -188,7 +211,6 @@ function getData() {
     // "https://upload.wikimedia.org/wikipedia/commons/b/be/Clair_de_lune_%28Claude_Debussy%29_Suite_bergamasque.ogg",
     true
   );
-
   request.responseType = "arraybuffer";
 
   request.onload = () => {
@@ -202,7 +224,6 @@ function getData() {
         source.playbackRate.value = playbackControl.value;
         source.connect(audioCtx.destination);
         source.loop = true;
-        // source.start();
       },
       (e) => {
         `Error with decoding audio data ${e.error}`;
@@ -226,4 +247,39 @@ function StopSound() {
   source.stop();
   soundIsPlaying = false;
   playbackControl.setAttribute("disabled", "disabled");
+}
+
+function PlaySoundEnd() {
+  getData();
+  source.start();
+  endSoundIsPlaying = true;
+  // I don't know why but it doesn't work if I don't put a setTimeout
+  setTimeout(() => {
+    source.playbackRate.value = Math.floor(avgRate * 100) / 100;
+    playbackValue.textContent = Math.floor(avgRate * 100) / 100;
+  }, 1000);
+}
+
+/// =================== BPM =================== ///
+function bpm() {
+  var seconds = new Date().getTime();
+  clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
+  previousClick = seconds;
+  // console.log(Math.floor(clicksPerMin));
+}
+// If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
+function diminishBpm() {
+  var seconds = new Date().getTime();
+  if (seconds - previousClick > 500) {
+    clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
+  }
+  // console.log(Math.floor(clicksPerMin));
+}
+
+/// =================== UTILITIES =================== ///
+function lerp(x, x0, x1, y0, y1) {
+  let value = (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  if (value > y1) return y1;
+  if (value < y0) return y0;
+  return Math.floor(value * 10) / 10;
 }
