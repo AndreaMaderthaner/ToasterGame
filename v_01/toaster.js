@@ -91,7 +91,7 @@ function moveToast(direction = false) {
     source.playbackRate.value = rate;
     playbackValue.textContent = rate;
   }
-
+  sendMessageWS(rate);
   let increment = -1 * lerp(rate, 0.5, 1.5, -5, 5);
   let reachedBottom = parseInt(bottom, 10) < -220;
   if (reachedBottom && increment < 0) {
@@ -273,7 +273,6 @@ function bpm() {
   var seconds = new Date().getTime();
   clicksPerMin = (1 / ((seconds - previousClick) / 1000)) * 60;
   previousClick = seconds;
-  console.log(clicksPerMin);
   // console.log(Math.floor(clicksPerMin));
 }
 // If someone is not clicking, we reset the bpm otherwise, it stays set at the last value
@@ -307,6 +306,7 @@ async function getButtonPress() {
           break;
         }
         if (soundIsPlaying) bpm();
+        console.log(value);
         // Do something with |value|...
       }
     } catch (error) {
@@ -316,4 +316,12 @@ async function getButtonPress() {
       reader.releaseLock();
     }
   }
+}
+
+/// =================== WEB SOCKET =================== ///
+// Create WebSocket connection.
+const socket = new WebSocket("ws://localhost:9001");
+function sendMessageWS(msg) {
+  // Connection opened
+  socket.send(msg);
 }
