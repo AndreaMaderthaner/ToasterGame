@@ -1,0 +1,12 @@
+Pd 0.53-0 on Darwin x86_64
+--------------------------------------------------------------------------------
+------------------ done with main ----------------------
+connection from 'pd' to 'pd-gui' on 127.0.0.1:50719
+Tk 8.6.12
+detected font: DejaVu Sans Mono
+using font: Menlo normal
+Loading plugin: /Applications/Pd-0.53-0.app/Contents/Resources/Scripts/pd_deken.tcl
+[deken] Platform detected: Darwin-amd64-float32
+Loading plugin: /Applications/Pd-0.53-0.app/Contents/Resources/Scripts/pd_docsdir.tcl
+Pd documents directory: DISABLED
+the Pd window filtered 11 lines
