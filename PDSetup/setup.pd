@@ -1,4 +1,4 @@
-#N canvas 107 270 922 500 12;
+#N canvas 592 338 922 500 12;
 #X obj 498 154 soundfiler;
 #N canvas 0 22 450 278 (subpatch) 0;
 #X array audioData 3.85229e+06 float 2;
@@ -12,11 +12,11 @@
 #X obj 224 384 tabread4~ audioData;
 #X obj 224 415 dac~;
 #X obj 224 353 *~;
-#X text 90 160 playback rate ->;
+#X text 104 167 playback rate ->;
 #X obj 227 264 hsl 128 15 0 0.2 0 0 empty empty empty -2 -8 0 10 #fcfcfc #000000 #000000 0 1;
 #X obj 223 233 line;
 #X obj 170 260 line~;
-#X obj 285 196 print;
+#X obj 305 201 print;
 #X obj 223 86 r \$0/to-websocket;
 #N canvas 2 50 450 300 messages-to-local 0;
 #X obj 14 15 inlet;
@@ -41,6 +41,9 @@
 #X obj 223 109 websocket-server 9001;
 #X obj 223 166 * 0.04;
 #X msg 223 196 \$1 200;
+#X obj 347 29 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000 #000000;
+#X text 194 19 bang this before refreshing browser:, f 20;
+#X floatatom 44 166 5 0 0 0 - - - 0;
 #X connect 0 0 9 1;
 #X connect 2 0 4 0;
 #X connect 3 0 0 0;
@@ -53,7 +56,9 @@
 #X connect 13 0 6 0;
 #X connect 15 0 17 0;
 #X connect 16 0 18 0;
+#X connect 16 0 22 0;
 #X connect 17 0 16 0;
 #X connect 18 0 19 0;
 #X connect 18 0 14 0;
 #X connect 19 0 13 0;
+#X connect 20 0 17 2;
