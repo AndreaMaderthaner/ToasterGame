@@ -1,6 +1,15 @@
 $(document).ready(function () {
   let audioContext = new AudioContext();
 
+  // Time for toaster setting
+  // 1 : 1m50s
+  // 1 - try 2: 1min30s
+  // 1 - try 3: 1min25s
+  // 1 - try 4: 1min20s
+  // 1 - try 5: 1min15s
+  // 1 - try 6: 1min10s
+  // 6 : 4:10
+
   // let timeForANote = 1;
   let playbackControl;
   let playbackValue;
@@ -30,9 +39,10 @@ $(document).ready(function () {
   let previousRate = 1;
 
   function getEnergyConsumption() {
-    consumption = Math.round(
-      Math.random() * (maxConsumption - minConsumption) + minConsumption
-    );
+    // consumption = Math.round(
+    //   Math.random() * (maxConsumption - minConsumption) + minConsumption
+    // );
+    consumption = document.querySelector(".consumptionInput").value;
   }
 
   // function playFrequency(frequency) {
@@ -75,12 +85,15 @@ $(document).ready(function () {
     if (rate < 1.2 && rate > 0.8) {
       rate = 1;
     }
-    if (previousRate == rate) {
-      source.playbackRate.value = rate;
-      playbackValue.textContent = rate;
+    // if (previousRate == rate) {
+    //   source.playbackRate.value = rate;
+    //   playbackValue.textContent = rate;
+    // }
+    if (rate == 1) {
+      sendMessageWS(0);
+    } else {
+      sendMessageWS(lerp(rate, 0.5, 1.5, 0.2, 1));
     }
-    sendMessageWS(rate);
-
     let increment = -1 * lerp(rate, 0.5, 1.5, -5, 5);
     let reachedBottom = parseInt(bottom, 10) < -220;
     if (reachedBottom && increment < 0) {
@@ -128,22 +141,23 @@ $(document).ready(function () {
         PlaySoundEnd();
       }
     }
-    handleSound();
+    // handleSound();
     clearInterval(move);
     clearInterval(downloadTimer);
     clearInterval(minusBpm);
   }
 
   $(document).ready(function () {
-    playbackControl = document.querySelector(".playback-rate-control");
-    playbackValue = document.querySelector(".playback-rate-value");
-    playbackControl.setAttribute("disabled", "disabled");
+    // playbackControl = document.querySelector(".playback-rate-control");
+    // playbackValue = document.querySelector(".playback-rate-value");
+    // playbackControl.setAttribute("disabled", "disabled");
     $("#port").click(function () {
       getButtonPress();
     });
     $("#start").click(function () {
       gameEnded = false;
-      time = 30 + 10 * document.getElementById("toastiness").value;
+      soundIsPlaying = true;
+      // time = 30 + 10 * document.getElementById("toastiness").value;
       avgRate = 0;
       counter = 0;
       stop();
@@ -160,9 +174,9 @@ $(document).ready(function () {
       // let interval = 200 - Math.round(((consumption * 0.1) / 60) * 100);
       let interval = 100;
       move = setInterval(moveToast, interval);
-      setTimeleft();
+      // setTimeleft();
       minusBpm = setInterval(diminishBpm, interval);
-      StartSound();
+      // StartSound();
       // $(".action").removeClass("hide");
       $(".hide").removeClass("hide");
 
@@ -185,6 +199,7 @@ $(document).ready(function () {
       }
 
       if (e.keyCode == 74) {
+        console.log("test");
         // playFrequency(playerTwo[0]);
         // moveToast(true);
         bpm();
@@ -295,7 +310,7 @@ $(document).ready(function () {
             break;
           }
           if (soundIsPlaying) bpm();
-          console.log(value);
+          // console.log(value);
           // Do something with |value|...
         }
       } catch (error) {
@@ -313,11 +328,11 @@ $(document).ready(function () {
 
   socket.onopen = function () {
     console.log("connected");
-    $("#connection").html("connected");
+    $("#connection").html("Connected");
   };
 
   socket.onclose = function () {
-    $("#connection").html("not connected");
+    $("#connection").html("Not connected");
   };
 
   function sendMessageWS(msg) {

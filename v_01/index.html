@@ -15,15 +15,22 @@
   <body>
     <header>
       <h1>The Toaster Game</h1>
-      <p id="connection">not connected</p>
+      <!-- <p id="connection">Not connected</p> -->
     </header>
 
-    <div class="consumption hide">
+    <div class="consumption">
       <p>Household consumption: <span id="consumption"></span></p>
+      <input
+        class="consumptionInput"
+        type="number"
+        min="100"
+        max="1000"
+        step="100"
+        value="100"
+      />
       <p>Required taps/m: <span id="taps"></span></p>
-      <p>Timeleft : <span id="countdown"></span></p>
     </div>
-    <div class="player hide">
+    <!-- <div class="player hide">
       <div>
         <h2>Player One</h2>
         <em class="action">Press Key A</em>
@@ -32,8 +39,8 @@
         <h2>Player Two</h2>
         <em class="action">Press Key J</em>
       </div>
-    </div>
-    <div class="center">
+    </div> -->
+    <!-- <div class="center">
       <h2>Toastiness Setting</h2>
       <input
         type="number"
@@ -44,12 +51,12 @@
         max="6"
         value="1"
       />
-    </div>
+    </div> -->
     <button class="button" id="port" title="Port">Get Serial Port</button>
     <!-- <button class="button" id="pd" title="Pd">Send Bang PD</button> -->
 
     <button class="button" id="start" title="Play">Start the Game</button>
-
+    <!-- 
     <div class="center">
       <h2>Playback rate</h2>
       <input
@@ -61,7 +68,7 @@
         value="1"
       />
       <span class="playback-rate-value">1.0</span>
-    </div>
+    </div> -->
 
     <div class="toaster-container">
       <div id="toast"></div>
