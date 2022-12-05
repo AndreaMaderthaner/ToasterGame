@@ -23,7 +23,7 @@ $(document).ready(function () {
   let consumption = 0;
   let maxConsumption = 1000;
   let minConsumption = 100;
-  let maxBpm = 500;
+  let maxBpm = 400;
   let minBpm = 100;
   let avgRate = 0;
   let counter = 0;
@@ -36,7 +36,8 @@ $(document).ready(function () {
   let downloadTimer;
   let minusBpm;
   let goalBpm = 0;
-  let previousRate = 1;
+  let targetBpm = 0;
+  // let previousRate = 1;
 
   function getEnergyConsumption() {
     // consumption = Math.round(
@@ -82,24 +83,31 @@ $(document).ready(function () {
     }
     avgRate = (avgRate * counter + rate) / (counter + 1);
     counter = counter + 1;
-    if (rate < 1.2 && rate > 0.8) {
-      rate = 1;
+    // console.log("current Rate", rate);
+    // console.log("target", targetBpm);
+    if (rate < targetBpm + 0.1 && rate > targetBpm - 0.1) {
+      rate = targetBpm;
     }
     // if (previousRate == rate) {
     //   source.playbackRate.value = rate;
     //   playbackValue.textContent = rate;
     // }
-    if (rate == 1) {
+    if (rate === targetBpm) {
       sendMessageWS(0);
     } else {
-      sendMessageWS(lerp(rate, 0.5, 1.5, 0.2, 1));
+      if (rate < targetBpm) {
+        sendMessageWS(lerp(rate, 0.5, targetBpm, 0.1, 0.5));
+      }
+      if (rate > targetBpm) {
+        sendMessageWS(lerp(rate, targetBpm, 1.5, 0.6, 1));
+      }
     }
-    let increment = -1 * lerp(rate, 0.5, 1.5, -5, 5);
+    let increment = (rate - targetBpm) * -10;
     let reachedBottom = parseInt(bottom, 10) < -220;
     if (reachedBottom && increment < 0) {
       increment = 0;
     }
-    previousRate = rate;
+    // previousRate = rate;
 
     if (parseInt(bottom, 10) < 0) {
       $("#toast").css("margin-bottom", parseInt(bottom, 10) + increment + "px");
@@ -154,6 +162,10 @@ $(document).ready(function () {
     $("#port").click(function () {
       getButtonPress();
     });
+    $("#sound").click(function () {
+      sendMessageWS(0);
+    });
+
     $("#start").click(function () {
       gameEnded = false;
       soundIsPlaying = true;
@@ -165,6 +177,7 @@ $(document).ready(function () {
       goalBpm = Math.floor(
         lerp(consumption, minConsumption, maxConsumption, minBpm, maxBpm)
       );
+      targetBpm = lerp(consumption, minConsumption, maxConsumption, 0.7, 1.3);
       $("#consumption").text(consumption);
       $("#taps").text(goalBpm);
       $("#toast").css("margin-bottom", "-200px");
