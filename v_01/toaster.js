@@ -23,14 +23,19 @@ $(document).ready(function () {
   let consumption = 0;
   let maxConsumption = 1000;
   let minConsumption = 100;
+
+  // Easy way to change the number of beat per minutes needed !
   let maxBpm = 400;
   let minBpm = 100;
+
+  // Average value, not used for now
   let avgRate = 0;
   let counter = 0;
 
   let move; // interval for moving the toast up (depending on consumption)
   let speed = 0; // speed of the players' button clicks used to calculate if they are on the track of losing or winning
   let time = 20; // Time to hold on
+
   var previousClick = 120;
   var clicksPerMin = 120;
   let downloadTimer;
@@ -39,6 +44,7 @@ $(document).ready(function () {
   let targetBpm = 0;
   // let previousRate = 1;
 
+  // Energy consumption calculated at the beginning, stored in consumption
   function getEnergyConsumption() {
     // consumption = Math.round(
     //   Math.random() * (maxConsumption - minConsumption) + minConsumption
@@ -71,6 +77,7 @@ $(document).ready(function () {
   // }
 
   // direction: false -> up, true -> down
+  // Direction is not used anymore
   function moveToast(direction = false) {
     let bottom = $("#toast").css("margin-bottom");
     let top = $("#toast").css("margin-top");

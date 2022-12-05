@@ -1,5 +1,5 @@
-#N canvas 53 17 1920 997 10;
-#X obj 724 273 hsl 128 12 0 1 0 1 \$0-speed empty engine-speed 6 6 1 8 #fcfcfc #000000 #000000 2540 1;
+#N canvas 953 0 958 988 10;
+#X obj 714 308 hsl 128 12 0 1 0 1 \$0-speed empty engine-speed 6 6 1 8 #fcfcfc #000000 #000000 0 1;
 #N canvas 0 0 733 539 fourstroke 0;
 #X obj 51 336 outlet~;
 #X obj 168 336 outlet~;
@@ -517,6 +517,8 @@
 #X restore 732 209 pd messages-to-local;
 #X obj 733 186 websocket-server 9001;
 #X obj 730 96 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000 #000000;
+#X msg 719 239 \$1 200;
+#X obj 714 276 line;
 #X connect 1 0 66 0;
 #X connect 1 1 66 0;
 #X connect 1 2 66 0;
@@ -589,6 +591,8 @@
 #X connect 90 0 15 1;
 #X connect 90 0 14 1;
 #X connect 91 0 93 0;
-#X connect 92 0 0 0;
+#X connect 92 0 95 0;
 #X connect 93 0 92 0;
 #X connect 94 0 93 2;
+#X connect 95 0 96 0;
+#X connect 96 0 0 0;
