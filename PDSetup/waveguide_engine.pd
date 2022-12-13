@@ -519,6 +519,7 @@
 #X obj 730 96 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000 #000000;
 #X msg 719 239 \$1 200;
 #X obj 714 276 line;
+#X floatatom 667 395 5 0 1 0 - - - 0;
 #X connect 1 0 66 0;
 #X connect 1 1 66 0;
 #X connect 1 2 66 0;
